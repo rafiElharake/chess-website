@@ -1,0 +1,91 @@
+
+body {
+  background-color: #ECE5D5;
+  color: #fff;
+  font-family: Arial, sans-serif;
+}
+.custombutton {
+  color: rgb(236, 229, 213);
+  background-color: rgb(61, 48, 40);
+  border-radius: 10px;
+  border: 3px solid rgb(110, 88, 74);
+  padding: 10px 20px;
+  margin: 10px 20px;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+  font-size: 18px; 
+
+}
+.container {
+  margin: 0 auto;
+  justify-content: center;
+  text-align: center;
+  padding-bottom: 20px;
+}
+
+.navbar {
+  font-family: "Aldrich", sans-serif;
+  background-color: #ECE5D5;
+  border: 1px solid #3D3028; 
+  padding: 5px;
+  margin-bottom: 6px;
+  justify-content: center; 
+  align-items: center;
+}
+
+
+.navbar img {
+  width: 65px;
+  height: 50px;
+  vertical-align: middle;
+  text-decoration: none; 
+}
+
+
+.navbarItem{
+  justify-content: center;
+  font-family: "Aldrich", sans-serif;
+
+  text-decoration: none;
+  font-size: 24px; 
+  color: #3D3028;
+  border: none;
+  padding: 10px 20px;
+  margin-left: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+  vertical-align: middle;
+
+}
+
+.navbarlogo{
+  justify-content: center;
+  text-decoration: none;
+  font-size: 24px; 
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  margin-left: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+  vertical-align: middle;
+}
+
+
+.content {
+  background-color: #ECE5D5;
+  padding: 20px;
+  border-radius: 5px;
+}
+.user {
+  background-color: #ECE5D5;
+  color:#3D3028;
+  padding: 20px;
+  border-radius: 5px;
+}
+
+h1 {
+  color: #3D3028;
+}

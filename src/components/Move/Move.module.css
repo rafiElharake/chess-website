@@ -1,0 +1,8 @@
+.move {
+    cursor: pointer;
+    padding: 3px;
+}
+
+.move:hover {
+    background-color: rgb(61,48,40,0.35);
+}

@@ -1,0 +1,56 @@
+.menuNav {
+    width: 100%;
+    height: auto; /* Changed to auto for flexibility */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.navBtn {
+    margin-top: 5px;
+    height: 50px; /* Changed to auto for flexibility */
+    width: 200px; /* Removed extra space between 200 and px */
+    padding: 10px;
+    background-color: #3D3028;
+    color: #ECE5D5;
+    font-size: 13px;
+    font-family: 'Raleway', sans-serif;
+    text-transform: uppercase;
+    text-decoration: none;
+    outline: none;
+    border: 1px solid #30241d;
+}
+
+.navBtn:hover {
+    cursor: pointer;
+    background-color: #1E1B1E;
+}
+
+.navBtnIcon {
+    color: #3D3028;
+    background: none;
+    font-size: 20px;
+    border: none;
+    margin: 0 1px;
+}
+
+.navBtnIcon:hover {
+    cursor: pointer;
+}
+
+.fakeBorder{
+    height: 100%;
+    background-color: #1C104E;
+    width: 3px;
+}
+
+.evaluationNum {
+    font-family: "Aldrich", sans-serif;
+    color: #3D3028;
+    font-size: 30px;
+    margin-left: 10px;
+    margin-right: 14px;
+    width: 65px;
+}
+
