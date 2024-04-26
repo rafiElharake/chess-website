@@ -1,7 +1,5 @@
+/* eslint-disable jsx-a11y/alt-text */
 import React, { useEffect, useState } from "react";
-
-import styles from './Board.module.css';
-
 import Chessboard from "chessboardjsx";
 
 import bishop_black from '../../img/b_b.svg';
@@ -17,11 +15,10 @@ import queen_white from '../../img/q_w.svg';
 import rook_black from '../../img/r_b.svg';
 import rook_white from '../../img/r_w.svg';
 
-const Chess = require("chess.js");
 
 const Board = ({ onMove, chess, currFen, side, notation }) => {
 
-    const [history, setHistory] = useState([]); // moves history
+    const [, setHistory] = useState([]); // moves history
 
     const [fen, setFen] = useState(currFen);
 
