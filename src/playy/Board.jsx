@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import BoardSquare from './BoardSquare'
+ import { useParams, useNavigate } from 'react-router-dom'
+
 export default function Board({ board, position }) {
   const [currBoard, setCurrBoard] = useState([])
 

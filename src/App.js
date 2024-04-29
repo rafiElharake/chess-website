@@ -16,6 +16,7 @@ const App = () => {
         <Router>
         <Routes> 
         <Route path="/" element={<Home/>} />
+        <Route path="/analysis/:id" element={<Analysis/>} />
         <Route path="/analysis" element={<Analysis/>} />
         <Route path="/play" element={<Play/>} />
         <Route path="/game/:id" element={<DndProvider backend={HTML5Backend}> <GameApp/></DndProvider>} />

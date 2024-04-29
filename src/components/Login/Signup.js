@@ -96,7 +96,7 @@ const Signup = () => {
                         <button
                             type="submit" 
                             onClick={onSubmit}                        
-                            className={styles.button}
+                            className={styles.custombutton}
                         >  
                             Sign up                                
                         </button>

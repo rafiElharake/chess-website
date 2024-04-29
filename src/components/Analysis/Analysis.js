@@ -1,6 +1,7 @@
 import React, { useEffect, useState,useRef } from "react";
 import Board from '../Board/Board';
 import Move from '../Move/Move';
+import { useParams, useNavigate } from 'react-router-dom'
 import SubAnalysisMove from '../SubAnalysisMove/SubAnalysisMove';
 import {Stockfish} from '../Stockfish/Stockfish';
 import MenuButtons from '../MenuButtons/MenuButtons';
@@ -14,14 +15,18 @@ import parser from '@chess-fu/pgn-parser'
 import Chart from "chart.js/auto";
 import Navigationbar from '../nav'
 import { move } from "../../playy/Game";
-
+import { zzzz } from "../Stockfish/Stockfish";
+import { auth } from '../Login/firebase-config'
+import { fromRef } from 'rxfire/firestore'
+import { db } from '../Login/firebase-config'
+import { collection, getDocs, where, query, doc, setDoc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
 const pgnParser = new parser();
 const Analysis = () => {
 
     const [chess] = useState(
         new Chess()
     );
-
+    const { id } = useParams();
     const [fen, setFen] = useState(chess.fen());
 
     const [analysisPGN, setAnalysisPGN] = useState("");
@@ -51,6 +56,11 @@ const Analysis = () => {
         chess.header('White', 'unknown')
         chess.header('Black', 'unknown')
     }, [chess]);
+    useEffect(() => {
+        if(id){
+            loadPGN()
+        }
+    }, []);
 
     useEffect(() => {
         window.addEventListener("keydown", handleKeyDown);
@@ -62,24 +72,6 @@ const Analysis = () => {
 
     const getEvalFromEngine = evalu => {
         setEvaluation(evalu);
-    }
-
-    const setCurrMoveToLast = pgn => {
-        
-        const parsed = pgnParser.parse(pgn);
-        const moves = parsed[0].history;
-        let moveCounter = 0;
-
-        for (let i = 0; i < moves.length; i ++) {
-            if (moves[i].piece != null) moveCounter ++;
-        }
-
-        setCurrMove({
-            moveNum: moveCounter,
-            ravNumber: [],
-            whichRav: []
-        });
-console.log(currMove)
     }
 
     const handleKeyDown = e => {
@@ -183,10 +175,26 @@ console.log(currMove)
 
     }
 
-    const loadPGN = (pgn) => {
+     const loadPGN = async (pgn) => {
+        if(id){
+        const docRef = collection(db, 'games');
+        const gameQuery = query(docRef, where('game.gameId', '==', id));
+        const querySnapshot =await getDocs(gameQuery);
+        const existingData = querySnapshot.docs[0].data();
+        let moves=existingData.pgn
+    let formattedPGN = '';
+for (let i = 0; i < moves.length; i++) {
+    if (i % 2 === 0) {
+        formattedPGN += `${Math.floor(i / 2) + 1}. `;
+    }
+    formattedPGN += `${moves[i]} `;
+    if ((i + 1) % 2 === 0) {
+        formattedPGN += '\n';
+    }
+}
+pgn=formattedPGN}
             setFen(chess.fen());
             setAnalysisPGN(pgn);
-            setCurrMoveToLast(pgn);
             setLoadActive(false);
        
     }
@@ -244,7 +252,17 @@ console.log(currMove)
             moveNum: currMove.moveNum + 1, // Increment move number to view the next move
             ravNumber: [],
             whichRav: []
-        });
+        });if (newPgn) {
+            console.log(newPgn)
+            const movess = newPgn.split(/\s+/);
+            if (movess) {
+                console.log(movess)
+                const lastMove = movess[movess.length - 2];
+                console.log("Last move:", lastMove);
+            console.log(lastMove)      
+        setThs(lastMove)} 
+        
+        }
     }
     
     const showPrevMove = () => {
@@ -395,6 +413,7 @@ console.log(currMove)
         }
 
         let newPgn = createPGN(headers, parsedMoves);
+
             chess.loadPgn(newPgn)
             setFen(chess.fen());
             setCurrMove({
@@ -697,7 +716,6 @@ console.log(currMove)
     }
 
     const onMove = (fen, move) => {
-        console.log(move)
 setThs(move)
         const parsed = pgnParser.parse(analysisPGN);
 
@@ -710,6 +728,7 @@ setThs(move)
                 ravNumber: [],
                 whichRav: []
             });
+
         } else {
             const headers = parsed[0] ? parsed[0].headers : []; 
             let moves = parsed[0] ? parsed[0].history : [];
@@ -863,7 +882,7 @@ setThs(move)
             />
 
             {engineStarted && 
-                <div style={{ height: '850px' }}>
+                <div style={{ height: '450px' }}>
                     <EvalBar
                         evaluation={evalutaion}
                         getCurrPlayer={getCurrPlayer}
@@ -895,7 +914,11 @@ setThs(move)
                     moveNum={moveNumberOverall}
                 />
 
-<div>
+<div style={{
+            maxWidth: '400px',
+            overflow: 'auto',
+            marginLeft: '100px',
+        }} >
 <canvas ref={chartRef} id="evaluationChart" />
 </div>
                 {engineStarted && 
@@ -904,6 +927,7 @@ setThs(move)
                         engineDepth={depth}
                         sendEval={getEvalFromEngine}
                         currMove={ths}
+                        {...(id && { id })}
                         moveNum={moveNumberOverall}
                     />
                 }
@@ -941,7 +965,30 @@ setThs(move)
                                 if (currMove.moveNum === moveNumberOverall && currMove.ravNumber.length === 0) {
                                     isActive = true;
                                 }
-
+                                const evaluation = zzzz[moveNumberOverall-1];
+                                let moveColor
+                                switch (evaluation) {
+                                    case "best move!":
+                                        moveColor="rgb(0, 255, 0, 1)";
+                                        break;
+                                        case "great move":
+                                            moveColor="rgb(255, 0, 255, 1)";
+                                            break;
+                                    case "good move":
+                                        moveColor="rgb(0, 0, 255, 1)";
+                                        break;
+                                    case "inaccurate move":
+                                        moveColor="rgb(255, 165, 0, 1)";
+                                        break;
+                                    case "bad move":
+                                        moveColor="rgb(140, 0, 50, 1)";
+                                        break;
+                                    case "blunder":
+                                        moveColor="rgb(255, 0, 0, 1)";
+                                        break;
+                                    default:
+                                        moveColor="inherit"; 
+                                }
                                 returnedComp.push( 
                                     <Move
                                         key={moveNumber + move.piece + move.to}
@@ -951,6 +998,8 @@ setThs(move)
                                         moveNum={moveNumberOverall}
                                         raw={move.raw}
                                         isActive={isActive}
+                                        randomColor= {moveColor}
+                                        
                                     />
                                 );
 

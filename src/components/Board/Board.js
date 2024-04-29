@@ -53,7 +53,7 @@ const Board = ({ onMove, chess, currFen, side, notation }) => {
                 id="board"
                 position={fen}
                 onDrop={onDrop}
-                width={850}
+                width={500}
                 undo={true}
                 orientation={side}
                 showNotation={notation}

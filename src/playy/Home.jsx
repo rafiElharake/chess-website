@@ -2,10 +2,10 @@ import React, { useState } from 'react'
 import { auth, db } from '../components/Login/firebase-config'
 import { useNavigate } from 'react-router-dom'
 import { collection, getDocs, where, query, doc, setDoc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
-
+import styles from '../components/home/Home.module.css'; // Import CSS module for styling
+import Nav from '../components/nav'
 export default function Home() {
     const { currentUser } = auth
-    const [showModal, setShowModal] = useState(false)
     const navigate = useNavigate()
     const newGameOptions = [
         { label: 'Black pieces', value: 'b' },
@@ -13,9 +13,6 @@ export default function Home() {
         { label: 'Random', value: 'r' },
     ]
 
-    function handlePlayOnline() {
-        setShowModal(true)
-    }
 
     async function startOnlineGame(startingPiece) {
         const usersCollectionRef = collection(db, 'backenddata');
@@ -47,40 +44,29 @@ console.log(username);
 
     return (
         <>
-            <div className="columns home">
+            <div style={{ color: '#3D3028' }}>
+                <Nav />
                 <div className="column has-background-primary home-columns">
-                    <button className="button is-link" onClick={startLocalGame}>
+                    <button className={styles.custombutton} onClick={startLocalGame}>
                         Play Locally
                     </button>
                 </div>
                 <div className="column has-background-link home-columns">
-                    <button className="button is-primary"
-                        onClick={handlePlayOnline}>
+                    <button className={styles.custombutton}>
                         Play Online
-                    </button>
-                </div>
-            </div>
-            <div className={`modal ${showModal ? 'is-active' : ''}`}>
-                <div className="modal-background"></div>
-                <div className="modal-content">
-                    <div className="card">
-                        <div className="card-content">
-                            <div className="content">
+                   
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+                            <div >
                                 Please Select the piece you want to start
                             </div>
-
-                        </div>
-                        <footer className="card-footer">
-                            {newGameOptions.map(({ label, value }) => (
-                                <span className="card-footer-item pointer" key={value}
+                            { newGameOptions.map(({ label, value }) => (
+                                <span  key={value}
                                     onClick={() => startOnlineGame(value)}>
                                     {label}
                                 </span>
                             ))}
-                        </footer>
-                    </div>
+                </div> </button>
                 </div>
-                <button className="modal-close is-large" onClick={() => setShowModal(false)}></button>
             </div>
         </>
     )

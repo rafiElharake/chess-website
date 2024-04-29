@@ -2,7 +2,7 @@
 body {
   background-color: #ECE5D5;
   color: #fff;
-  font-family: Arial, sans-serif;
+  font-family: "Aldrich", sans-serif;
 }
 .custombutton {
   color: rgb(236, 229, 213);
@@ -12,21 +12,20 @@ body {
   padding: 10px 20px;
   margin: 10px 20px;
   cursor: pointer;
-  font-family: Arial, sans-serif;
+  font-family: "Aldrich", sans-serif;
   font-size: 18px; 
-
 }
 .container {
   margin: 0 auto;
   justify-content: center;
   text-align: center;
-  padding-bottom: 20px;
+  padding-bottom: 0px;
 }
 
 .navbar {
   font-family: "Aldrich", sans-serif;
   background-color: #ECE5D5;
-  border: 1px solid #3D3028; 
+  border: 3px solid #3D3028; 
   padding: 5px;
   margin-bottom: 6px;
   justify-content: center; 
@@ -35,7 +34,7 @@ body {
 
 
 .navbar img {
-  width: 65px;
+  width: 70px;
   height: 50px;
   vertical-align: middle;
   text-decoration: none; 
@@ -47,7 +46,7 @@ body {
   font-family: "Aldrich", sans-serif;
 
   text-decoration: none;
-  font-size: 24px; 
+  font-size: 20px; 
   color: #3D3028;
   border: none;
   padding: 10px 20px;

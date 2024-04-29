@@ -7,6 +7,7 @@ import { db } from '../components/Login/firebase-config'
 import { collection, getDocs, where, query, doc, setDoc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
 let gameRef
 let member
+export let pgn = '';
 
 const chess = new Chess()
 export let updatedData
@@ -125,8 +126,11 @@ export function move(from, to, promotion) {
     if (gameRef) {
         if (member.piece === chess.turn()) {
             const legalMove = chess.move(tempMove)
+            
             if (legalMove) {
+                pgn+=legalMove
                 updateGame()
+
             }
         }
     } else {
@@ -141,8 +145,14 @@ export function move(from, to, promotion) {
 
 async function updateGame(pendingPromotion, reset) {
     const isGameOver = chess.isGameOver()
-    if (gameRef) {
-         updatedData = { gameData: chess.fen(), pendingPromotion: pendingPromotion || null }
+
+    if (gameRef) {    
+        const docRef = collection(db, 'games');
+        const gameQuery = query(docRef, where('game.gameId', '==', gameRef.id));
+        const querySnapshot = await getDocs(gameQuery);
+        const existingData = querySnapshot.docs[0].data();
+        
+         updatedData = { gameData: chess.fen(), pendingPromotion: pendingPromotion || null,pgn: [...(existingData.pgn || []), ...chess.history()] }
         
          console.log(chess.fen())
         if (reset) {
@@ -163,17 +173,38 @@ async function updateGame(pendingPromotion, reset) {
 
 
 }
-function getGameResult() {
+async function getGameResult() {
+    if(gameRef){
+         const docRef = collection(db, 'games');
+        const gameQuery = query(docRef, where('game.gameId', '==', gameRef.id));
+        const querySnapshot =await getDocs(gameQuery);
+        const existingData = querySnapshot.docs[0].data();
+        let moves=existingData.pgn
+        console.log(moves)
+    let formattedPGN = '';
+for (let i = 0; i < moves.length; i++) {
+    if (i % 2 === 0) {
+        formattedPGN += `${Math.floor(i / 2) + 1}. `;
+    }
+    formattedPGN += `${moves[i]} `;
+    if ((i + 1) % 2 === 0) {
+        formattedPGN += '\n';
+    }
+}
+pgn=formattedPGN
+console.log(formattedPGN);
+    }
+   
     if (chess.isCheckmate()) {
         const winner = chess.turn() === "w" ? 'BLACK' : 'WHITE'
         return `CHECKMATE - WINNER - ${winner}`
     } else if (chess.in_draw()) {
         let reason = '50 - MOVES - RULE'
-        if (chess.in_stalemate()) {
+        if (chess.isStalemate()) {
             reason = 'STALEMATE'
-        } else if (chess.in_threefold_repetition()) {
+        } else if (chess.isThreefoldRepetition()) {
             reason = 'REPETITION'
-        } else if (chess.insufficient_material()) {
+        } else if (chess.isInsufficientMaterial()) {
             reason = "INSUFFICIENT MATERIAL"
         }
         return `DRAW - ${reason}`

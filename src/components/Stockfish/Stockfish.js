@@ -3,25 +3,33 @@ import React, { useState, useEffect } from 'react';
 import styles from './Stockfish.module.css';
 
 import { Chess } from "chess.js";
+import { update } from 'firebase/database';
 
 let stockfish = new Worker("/stockfish.js");
 export let zzzz = []; // Your evaluations data
+    let prevbestLines="exe4"
+let evaluations=[]
+let movess=[]
 
-export const Stockfish = ({ fen, engineDepth, sendEval, currMove }) => {
+export const Stockfish = ({ fen, engineDepth, sendEval, currMove,id }) => {
+    const [x, setx] = useState([]); // [0]-best, [1]-second best, [2]-third best
 
     const [depth, setDepth] = useState(engineDepth);
     const [bestLines, setBestLines] = useState([]); // [0]-best, [1]-second best, [2]-third best
     const [, setBestMove] = useState("");
     const [currEval, setCurrEval] = useState("0");
     const [count, setCount] = useState(0);
+    const [timeoutCounter, setTimeoutCounter] = useState(0); // Counter for timeouts
+
     useEffect(() => {
         setDepth(engineDepth);
     }, [engineDepth])
+    useEffect(() => {
+            console.log(currMove)
+}, [currMove])
 
     const convertEvaluation = (ev) => {
-        // console.log(ev);
         const chess = new Chess(`${fen}`);
-//console.log(curMove)
         const turn = chess.turn();
 
         if (turn === 'b' && !ev.startsWith('M')) {
@@ -39,107 +47,163 @@ export const Stockfish = ({ fen, engineDepth, sendEval, currMove }) => {
     useEffect(() => {
         sendEval(currEval);
     }, [sendEval, currEval]);
+
     useEffect(() => {
+        if(currMove){
+        prevbestLines=bestLines[0][0]
        if (currMove && bestLines) { 
-        console.log(bestLines)
-            let curMove = currMove.san;
+        let curMove
+        if(currMove.san)
+        curMove = currMove.san;
+        else curMove=currMove
+        if(curMove.charAt(curMove.length-1)==='#')
+        curMove = curMove.slice(0, -1);
             let test;
-            let printed = false;
-            if (curMove.length === 2)
-                test = curMove[0] + curMove[0] + curMove[1];  
+            let mev;
+            let printed=false
+        console.log(curMove)
+        if(curMove==='O-O'){
+            for(let z=29;z>=0;z--){
+                console.log(movess[z].charAt(0))
+                if(movess[z].charAt(0)==='K'&&movess[z].charAt(2)==='g')
+                test=movess[z]
+            console.log(movess[z])
+
+                }
+        }
+        else if(curMove==='O-O-O'){
+            for(let z=29;z>=0;z--){
+
+                if(movess[z].charAt(0)==='K'&&movess[z].charAt(2)==='c')
+                test=movess[z]
+                }
+        }
+            else if(curMove.length === 6)
+                test = curMove[0] +curMove[1] + curMove[2]+ curMove[3];
+            else if (curMove.length === 2){
+                test = curMove[0] + 'x'+curMove[0] + curMove[1];  
+            }
+            else if (curMove.length === 3&&curMove!=='O-O'){
+                test = curMove[0] + 'x'+curMove[1] + curMove[2];  
+            }
             else
                 test = curMove;
-            
-            for (let i = 0; i <= 10; i++) {
-                if (test[0] + 'x' + test[1] + test[2] === bestLines[i][0]&&!printed) {
-                    if(i===0){zzzz[count]="best move!"
-                    printed = true;}
-                    else if(0<i&&i<4){zzzz[count]="good move"
-                    printed = true; }
-                    else if(3<i&&i<7){zzzz[count]="inaccurate move"
-                    printed = true; }
-                    else if(6<i&&i<10){zzzz[count]="bad move"
-                    printed = true; }
-                    setCount(count+1)
+                console.log(test, evaluations,movess)
+            for(let i=0;i<30;i++){
+                if (test === movess[i]) {
+                    if(i===0){printed=true
+                        zzzz[count]='best move!'}
+                     if(!printed&&((Math.abs(evaluations[i]-evaluations[0])<50))){
+                            zzzz[count]='great move'
+                            printed=true
+                    }
+                    if(!printed&&((Math.abs(evaluations[i]-evaluations[0])<100))){
+                        zzzz[count]='good move'
+                        printed=true
                 }
-                else if(i>9&&!printed){
-                    zzzz[count]="blunder"
+                if(!printed&&((Math.abs(evaluations[i]-evaluations[0])<200))){
+                    zzzz[count]='inaccurate move'
+                    printed=true
+            }
+            if(!printed&&((Math.abs(evaluations[i]-evaluations[0])<300))){
+                zzzz[count]='bad move'
                 printed=true
-                setCount(count+1)
-                } 
-
+        }
+                    
+            }else{
+                if(i>18&&!printed)zzzz[count]='blunder'
             }
         }
-    }, [currMove]);
+                setCount(count+1)
+       }}
+
+    }, [timeoutCounter]);
 
     useEffect(() => {
+let bestLinesCopy
+        let timeoutId;
+                    setTimeoutCounter(timeoutCounter => timeoutCounter + 1);
+        const handleTimeout = () => {
+            stockfish.terminate();
+        };
+    
         stockfish.terminate();
         stockfish = new Worker("/stockfish.js");
         stockfish.postMessage("uci");
         stockfish.postMessage("ucinewgame");
-        stockfish.postMessage("setoption name MultiPV value 11");
+        stockfish.postMessage("setoption name MultiPV value 50");
         stockfish.postMessage(`position fen ${fen}`);
         stockfish.postMessage(`go depth ${depth}`);
         stockfish.onmessage = function(event) {
-            // console.log(event.data ? event.data: event);
-            if (event.data.startsWith(`info depth`)) {
-                let message = event.data.split(' ');
-
-                let index = 0;
-                let movesIndex = 0;
-
-                let moves = [];
-
-                let evalutaion = "0";
-
-                for (let i = 0; i < message.length; i ++) {
-                    if (message[i] === 'multipv') {
-                        index = parseInt(message[i + 1]) - 1;
+            try {
+                if (event.data.startsWith(`info depth`)) {
+                    let message = event.data.split(' ');
+    
+                    let index = 0;
+                    let movesIndex = 0;
+    
+                    let moves = [];
+    
+                    let evalutaion = "0";
+    
+                    for (let i = 0; i < message.length; i ++) {
+                        if (message[i] === 'multipv') {
+                            index = parseInt(message[i + 1]) - 1;
+                        }
+                        for(let j=0; j<30; j++){
+                            if(message[i] === 'score' && message[i + 1] === 'cp' && index === j)
+                            evaluations[j]=(message[i + 2])
+                        }
+                        if (message[i] === 'score' && message[i + 1] === 'cp' && index === 0) {
+                            evalutaion = message[i + 2];
+                            setCurrEval(convertEvaluation(evalutaion));
+                        }
+    
+                        else if (message[i] === 'score' && index === 0) {
+                            evalutaion = 'M' + message[i + 2];
+                            setCurrEval(convertEvaluation(evalutaion));
+                        }
+    
+    
+                        if (message[i] === 'pv') {
+                            movesIndex = i + 1;
+                            break;
+                        }
+    
                     }
-
-                    if (message[i] === 'score' && message[i + 1] === 'cp' && index === 0) {
-                        evalutaion = message[i + 2];
-                        setCurrEval(convertEvaluation(evalutaion));
-                        //console.log(evalutaion);
+    
+                    for (let i = movesIndex; i < message.length; i ++) {
+                        if (message[i] === 'bmc') break;
+                        moves.push(message[i]);
                     }
-
-                    else if (message[i] === 'score' && index === 0) {
-                        evalutaion = 'M' + message[i + 2];
-                        setCurrEval(convertEvaluation(evalutaion));
-                        //console.log(evalutaion);
-                    }
-
-
-                    if (message[i] === 'pv') {
-                        movesIndex = i + 1;
-                        break;
+                     bestLinesCopy = bestLines;
+                    if(!(moves.includes("mate")))
+                    bestLinesCopy[index] = convertStockfishLine(moves);
+                    for(let j=0; j<30; j++){
+                        movess[j]=(bestLines[j][0])
                     }
 
                 }
-
-                for (let i = movesIndex; i < message.length; i ++) {
-                    if (message[i] === 'bmc') break;
-                    moves.push(message[i]);
+    
+                if (event.data.startsWith("bestmove")) {
+                    let message = event.data.split(' ');
+                    setBestMove(message[1]);
                 }
-
-                const bestLinesCopy = bestLines;
-                //console.log(moves)
-                if(!(moves.includes("mate")))
-                bestLinesCopy[index] = convertStockfishLine(moves);
-                setBestLines(bestLinesCopy);
-            }
-
-            if (event.data.startsWith("bestmove")) {
-                let message = event.data.split(' ');
-                setBestMove(message[1]);
+            } catch (error) {
             }
         };
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [fen, depth, currMove]);
-
-    const convertStockfishLine = line => {
         
+    // Set timeout to terminate Stockfish after 3 seconds
+    timeoutId = setTimeout(handleTimeout, 3000);
+
+    // Clean up function to clear the timeout when component unmounts or useEffect runs again
+    return () => {
+        clearTimeout(timeoutId);
+    };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [fen, depth, currMove]);
+    
+    const convertStockfishLine = line => {
         const chess2 = new Chess(`${fen}`);
 
         const convertedLine = [];
@@ -184,9 +248,10 @@ export const Stockfish = ({ fen, engineDepth, sendEval, currMove }) => {
 
     }
 
+
     return (
         <div className={styles.bestLines}>
- {bestLines.slice(0, 3).map((bestLine, index) => (
+ {bestLines&&bestLines.slice(0, 3).map((bestLine, index) => (
                 <div className={styles.bestLine} key={index}>
                 {bestLine.map((bestMove, subIndex) => (
                     <div className={styles.bestMove} key={subIndex}>

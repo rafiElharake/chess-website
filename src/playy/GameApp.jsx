@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react'
 import { gameSubject, initGame, resetGame } from './Game'
 import Board from './Board'
 import './app.css'
-//import Board from '../components/Board/Board'
+import styles from '../components/home/Home.module.css'; // Import CSS module for styling
 import { useParams, useNavigate } from 'react-router-dom'
 import {  } from 'react-router-dom';
 import { doc, updateDoc } from "firebase/firestore"; 
 import { db } from '../components/Login/firebase-config'
 import { Chess } from "chess.js";
+import Nav from '../components/nav'
 
 import { handleMove } from './Game';
 function GameApp() {
@@ -43,7 +44,7 @@ const { id } = useParams();
           setIsGameOver(game.isGameOver);
           setResult(game.result);
           setPosition(game.position);
-          setStatus(game.game.status);
+          if(id!=='local')setStatus(game.game.status);
           setGame(game);
         });
       } 
@@ -71,17 +72,24 @@ const { id } = useParams();
   if (initResult === 'intruder') {
     return 'The game is already full'
   }
-  return (
+  return (<div><Nav />
     <div className="app-container">
+      
       {isGameOver && (
-        <h2 className="vertical-text">
+        <h2 >
           GAME OVER
-          <button onClick={async () => {
+          <button className={styles.custombutton}
+          onClick={async () => {
             await resetGame()
-            navigate('/')
+            navigate('/play')
           }}>
-            <span className="vertical-text"> NEW GAME</span>
+            <span> NEW GAME</span>
           </button>
+          {id!=='local' && (
+  <button className={styles.custombutton} onClick={() => navigate(`/analysis/${id}`)}>
+    <span>analyse</span>
+  </button>
+)}
         </h2>
       )}
         <div className="board-container">
@@ -90,24 +98,28 @@ const { id } = useParams();
 
         {game.member && game.member.name && <span className="tag is-link">{game.member.name}</span>}
       </div>
-      {result && <p className="vertical-text">{result}</p>}
       {status === 'waiting' && (
-        <div className="notification is-link share-game">
-          <strong>Share this game to continue</strong>
-          <br />
-          <br />
-          <div className="field has-addons">
-            <div className="control is-expanded">
-              <input type="text" name="" id="" className="input" readOnly value={sharebleLink} />
-            </div>
-            <div className="control">
-              <button className="button is-info" onClick={copyToClipboard}>Copy</button>
-            </div>
-          </div>
-        </div>
-      )}
-
+  <div style={{   fontSize:"18px",     color: '#3D3028', marginLeft: "18px" }} className="notification is-link share-game">
+    <strong>Share this game to continue</strong>
+    <br />
+    <br />
+    <div style={{ display: "flex", alignItems: "center" }}>
+      <input
+        style={{ fontFamily: "'Aldrich', sans-serif", marginRight: "8px" }}
+        type="text"
+        name=""
+        id=""
+        className="input"
+        readOnly
+        value={sharebleLink}
+      />
+      <button className={styles.custombutton} onClick={copyToClipboard}>Copy</button>
     </div>
+  </div>
+)}
+
+
+    </div></div>
   )
 }
 
