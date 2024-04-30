@@ -138,12 +138,9 @@ let bestLinesCopy
             try {
                 if (event.data.startsWith(`info depth`)) {
                     let message = event.data.split(' ');
-    
                     let index = 0;
-                    let movesIndex = 0;
-    
-                    let moves = [];
-    
+                    let movesIndex = 0
+                    let moves = []
                     let evalutaion = "0";
     
                     for (let i = 0; i < message.length; i ++) {

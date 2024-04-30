@@ -1025,7 +1025,15 @@ setThs(move)
                         })
                     }
                 </div>
-
+<div>
+                        <br></br>
+                    <span style={{ color: 'rgb(0, 255, 0)' }}>best move!-</span>
+                    <span style={{ color: 'rgb(255, 0, 255)' }}>great move-</span>
+                    <span style={{ color: 'rgb(0, 0, 255)' }}>good move-</span>
+                    <span style={{ color: 'rgb(255, 165, 0, 1)' }}>inaccurate move-</span>
+                    <span style={{ color: 'rgb(140, 0, 50)' }}>bad move-</span>
+                    <span style={{ color: 'rgb(255, 0, 0)' }}>blunder</span>
+                </div>
 
 
 
