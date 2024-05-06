@@ -5,9 +5,11 @@
 
 .app-container {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     background-color: #ECE5D5;
+    color:#3D3028
 }
 .home {
     min-height: 100vh;
@@ -52,11 +54,12 @@ font-size: 18px;
 }
 
 .square-black {
-    background: rgb(181, 136, 99);
+        background: rgb(240, 217, 181);
 }
 
 .square-white {
-    background: rgb(240, 217, 181);
+    background: rgb(181, 136, 99);
+
 }
 
 .board-square {
@@ -83,9 +86,11 @@ font-size: 18px;
 }
 
 .vertical-text {
-    text-orientation: upright;
-    writing-mode: vertical-lr;
-    font-family: sans-serif;
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+    font-family: "Aldrich", sans-serif;
     padding: 10px;
     color:#3D3028;
 }

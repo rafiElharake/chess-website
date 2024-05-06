@@ -828,16 +828,18 @@ setThs(move)
                     options: {
                         scales: {
                             x: {
-                                title: {
-                                    display: true,
-                                    text: "Move Number",
-                                },
+                                display: false, // Hide x-axis
                             },
                             y: {
                                 title: {
                                     display: true,
                                     text: "Evaluation",
                                 },
+                            },
+                        },
+                        plugins: {
+                            legend: {
+                                display: false, // Hide legend
                             },
                         },
                     },

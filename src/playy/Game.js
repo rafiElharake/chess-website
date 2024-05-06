@@ -5,14 +5,38 @@ import { auth } from '../components/Login/firebase-config'
 import { fromRef } from 'rxfire/firestore'
 import { db } from '../components/Login/firebase-config'
 import { collection, getDocs, where, query, doc, setDoc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
+import {timeoutt} from './GameApp'
+
 let gameRef
 let member
 export let pgn = '';
-
-const chess = new Chess()
+export let gametime=0;
+export const chess = new Chess()
 export let updatedData
 export let gameSubject
-export async function initGame(gameRefFb) {    
+let depth=10
+let stockfish = new Worker("/stockfish.js");
+function getStockfishMove(fen) {
+    stockfish.postMessage('position fen ' + fen);
+    stockfish.postMessage(`go depth ${depth}`); 
+    stockfish.onmessage = function(event) {
+        const eventData = event.data;
+        if (eventData.startsWith("bestmove")) {
+            const bestMoveRegex = /^bestmove\s(\w{2})(\w{2})/;
+            const match = bestMoveRegex.exec(eventData);
+            if (match && match.length >= 3) {
+                const fromSquare = match[1];
+                const toSquare = match[2];
+                const bestMoveString = `${fromSquare}${toSquare}`;
+                console.log(bestMoveString);
+                chess.move(bestMoveString)
+                updateGame()
+            }
+        }
+    };
+}
+export async function initGame(gameRefFb) {   
+    chess.reset()
     const { currentUser } = auth
     if (gameRefFb) {
         gameRef = gameRefFb
@@ -37,8 +61,10 @@ export async function initGame(gameRefFb) {
             const currUser = {
                 uid: currentUser.uid,
                 name: username,
-                piece: creator.piece === 'w' ? 'b' : 'w'
+                piece: creator.piece === 'w' ? 'b' : 'w',
+                time: creator.time
             }
+            gametime=creator.time
  const updatedMembers = [...initialGame.game.members, currUser]
  const game = {
     status: 'ready',
@@ -63,7 +89,7 @@ export async function initGame(gameRefFb) {
                 if (gameData) {
                     chess.load(gameData)
                 }
-                const isGameOver = chess.isGameOver()
+                const isGameOver = (chess.isGameOver()||timeoutt)
                 const gameInfo = {
                     board: chess.board(),
                     pendingPromotion,
@@ -83,7 +109,7 @@ export async function initGame(gameRefFb) {
         gameSubject = new BehaviorSubject()
         const savedGame = localStorage.getItem('savedGame')
         if (savedGame) {
-            chess.load(savedGame)
+           // chess.load(savedGame)
         }
         updateGame()
     }
@@ -122,7 +148,6 @@ export function move(from, to, promotion) {
     if (promotion) {
         tempMove.promotion = promotion
     }
-    console.log({ tempMove, member }, chess.turn())
     if (gameRef) {
         if (member.piece === chess.turn()) {
             const legalMove = chess.move(tempMove)
@@ -135,16 +160,16 @@ export function move(from, to, promotion) {
         }
     } else {
         const legalMove = chess.move(tempMove)
-
         if (legalMove) {
             updateGame()
+            getStockfishMove(chess.fen())
         }
     }
 
 }
 
 async function updateGame(pendingPromotion, reset) {
-    const isGameOver = chess.isGameOver()
+    const isGameOver = (chess.isGameOver()||timeoutt)
 
     if (gameRef) {    
         const docRef = collection(db, 'games');
@@ -154,7 +179,6 @@ async function updateGame(pendingPromotion, reset) {
         
          updatedData = { gameData: chess.fen(), pendingPromotion: pendingPromotion || null,pgn: [...(existingData.pgn || []), ...chess.history()] }
         
-         console.log(chess.fen())
         if (reset) {
             updatedData.status = 'over'
         }
@@ -180,7 +204,6 @@ async function getGameResult() {
         const querySnapshot =await getDocs(gameQuery);
         const existingData = querySnapshot.docs[0].data();
         let moves=existingData.pgn
-        console.log(moves)
     let formattedPGN = '';
 for (let i = 0; i < moves.length; i++) {
     if (i % 2 === 0) {
@@ -192,13 +215,20 @@ for (let i = 0; i < moves.length; i++) {
     }
 }
 pgn=formattedPGN
-console.log(formattedPGN);
+const { currentUser } = auth
+let id=currentUser.uid
+const userDocRef = doc(db, 'backenddata', id);
+const userDocSnapshot = await getDoc(userDocRef);
+        const userData = userDocSnapshot.data();
+        const gamesArray = Array.isArray(userData.games) ? userData.games : [];
+        const updatedGames = [...gamesArray, gameRef.id];        await updateDoc(userDocRef, {
+            games: updatedGames
+        });
     }
-   
     if (chess.isCheckmate()) {
         const winner = chess.turn() === "w" ? 'BLACK' : 'WHITE'
         return `CHECKMATE - WINNER - ${winner}`
-    } else if (chess.in_draw()) {
+    } else if (chess.isDraw()) {
         let reason = '50 - MOVES - RULE'
         if (chess.isStalemate()) {
             reason = 'STALEMATE'

@@ -23,6 +23,7 @@ export default function Piece({
         ref={drag}
         style={{ opacity: isDragging ? 0 : 1 }}
       >
+        
         <img src={pieceImg} alt="" className="piece" />
       </div>
     </>

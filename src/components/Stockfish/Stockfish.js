@@ -24,9 +24,6 @@ export const Stockfish = ({ fen, engineDepth, sendEval, currMove,id }) => {
     useEffect(() => {
         setDepth(engineDepth);
     }, [engineDepth])
-    useEffect(() => {
-            console.log(currMove)
-}, [currMove])
 
     const convertEvaluation = (ev) => {
         const chess = new Chess(`${fen}`);
@@ -61,14 +58,10 @@ export const Stockfish = ({ fen, engineDepth, sendEval, currMove,id }) => {
             let test;
             let mev;
             let printed=false
-        console.log(curMove)
         if(curMove==='O-O'){
             for(let z=29;z>=0;z--){
-                console.log(movess[z].charAt(0))
                 if(movess[z].charAt(0)==='K'&&movess[z].charAt(2)==='g')
                 test=movess[z]
-            console.log(movess[z])
-
                 }
         }
         else if(curMove==='O-O-O'){
@@ -88,7 +81,6 @@ export const Stockfish = ({ fen, engineDepth, sendEval, currMove,id }) => {
             }
             else
                 test = curMove;
-                console.log(test, evaluations,movess)
             for(let i=0;i<30;i++){
                 if (test === movess[i]) {
                     if(i===0){printed=true
@@ -142,14 +134,20 @@ let bestLinesCopy
                     let movesIndex = 0
                     let moves = []
                     let evalutaion = "0";
-    
+                    if(event.data.includes('mate'))
+                    evaluations[0]=10000
                     for (let i = 0; i < message.length; i ++) {
                         if (message[i] === 'multipv') {
                             index = parseInt(message[i + 1]) - 1;
                         }
                         for(let j=0; j<30; j++){
-                            if(message[i] === 'score' && message[i + 1] === 'cp' && index === j)
+                            
+                           if(message[i] === 'score' && message[i + 1] === 'cp' && index === j){
                             evaluations[j]=(message[i + 2])
+                           }
+                           else if(message[i] === 'score' && index === 0)
+                            evaluations[j]=100000
+
                         }
                         if (message[i] === 'score' && message[i + 1] === 'cp' && index === 0) {
                             evalutaion = message[i + 2];

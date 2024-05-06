@@ -7,18 +7,15 @@ const Nav=()=> {
 
   const navigate = useNavigate();
 
-  const handleImageClick = () => {
-    navigate("/");
-  };
   return (
                 <div className={styles.container}>
         <nav className={styles.navbar}>
-        <img
+        <a href="/">
+<img
           src={knight}
           alt="Logo"
-          className={styles.navbarlogo} // Apply any necessary styling to the image
-          onClick={handleImageClick} // Attach onClick event handler directly to the image
-        />
+          className={styles.navbarlogo} 
+        /></a>
         <a href="/analysis" className={styles.navbarItem}>
           Analysis
         </a>

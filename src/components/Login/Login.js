@@ -18,8 +18,7 @@ const Login = () => {
             .then((userCredential) => {
                 const user = userCredential.user;
                 console.log(user);
-                navigate("/");
-            })
+                window.location.href = "/";            })
             .catch((error) => {
                 setError(error.message); // Set error message for display
             });

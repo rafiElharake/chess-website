@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { collection, getDocs, where, query, doc, setDoc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
 import styles from '../components/home/Home.module.css'; // Import CSS module for styling
 import Nav from '../components/nav'
+export let gametimeH
 export default function Home() {
     const { currentUser } = auth
     const navigate = useNavigate()
@@ -12,9 +13,19 @@ export default function Home() {
         { label: 'White pieces', value: 'w' },
         { label: 'Random', value: 'r' },
     ]
+    const time = [
+        { label: '15 minutes', value: '15' },
+        { label: '10 minutes', value: '10' },
+        { label: '5 minutes', value: '1' },
+    ]
+    const [showModal, setShowModal] = useState(false)
+    const [selectedOption, setSelectedOption] = useState(null);
+    const [selectedOptionv, setSelectedOptionv] = useState(null);
+    const [selectedTime, setSelectedTime] = useState(null);
+    const [selectedTimev, setSelectedTimev] = useState(null);
 
-
-    async function startOnlineGame(startingPiece) {
+    async function startOnlineGame(startingPiece, selectedTime) {
+        gametimeH=selectedTime*60;
         const usersCollectionRef = collection(db, 'backenddata');
         const currentUser = auth.currentUser;        
       const currentUserDocRef = doc(usersCollectionRef, currentUser.uid);
@@ -25,7 +36,8 @@ console.log(username);
             uid: currentUser.uid,
             piece: startingPiece === 'r' ? ['b', 'w'][Math.round(Math.random())] : startingPiece,
             name: username,
-            creator: true
+            creator: true,
+            time: selectedTime*60
         }
         const game = {
             status: 'waiting',
@@ -36,12 +48,16 @@ console.log(username);
             game:game
         })
         navigate(`/game/${game.gameId}`)
+
     }
 
     function startLocalGame() {
         navigate('/game/local')
     }
-
+    function handlePlayOnline() {
+        setShowModal(true);
+    }
+    
     return (
         <>
             <div style={{ color: '#3D3028' }}>
@@ -51,23 +67,42 @@ console.log(username);
                         Play Locally
                     </button>
                 </div>
-                <div className="column has-background-link home-columns">
-                    <button className={styles.custombutton}>
+                <div  style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+                    <button className={styles.custombutton} onClick={handlePlayOnline}>
                         Play Online
-                   
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
-                            <div >
-                                Please Select the piece you want to start
-                            </div>
-                            { newGameOptions.map(({ label, value }) => (
-                                <span  key={value}
-                                    onClick={() => startOnlineGame(value)}>
-                                    {label}
-                                </span>
-                            ))}
-                </div> </button>
+                    </button>
+                    {showModal && (
+                        <div>
+    <button className={`${styles.custombutton} ${styles['is-active']}`}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+            {newGameOptions.map(({ label, value }) => (
+                <span className={styles.selected} key={value} onClick={() => { setSelectedOption(label); setSelectedOptionv(value); }}>
+                    {label}
+                </span>
+            ))}
+        </div>
+    </button>
+        <button className={`${styles.custombutton} ${styles['is-active']}`}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+            {time.map(({ label, value }) => (
+                <span className={styles.selected} key={value}onClick={() => { setSelectedTime(label); setSelectedTimev(value); }}>
+                    {label}
+                </span>
+            ))}
+        </div>
+    </button><br></br>
+    </div>
+)}                     {showModal && (
+    <button  onClick={() => startOnlineGame(selectedOptionv,selectedTimev)} className={`${styles.custombutton} ${styles['is-active']}`}>
+     <div>
+         start game<br></br>
+         {selectedOption},{selectedTime}
+     </div>
+ </button>)}
+
                 </div>
             </div>
         </>
-    )
+    );
+    
 }

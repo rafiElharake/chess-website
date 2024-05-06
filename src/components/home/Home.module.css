@@ -14,12 +14,14 @@ body {
   cursor: pointer;
   font-family: "Aldrich", sans-serif;
   font-size: 18px; 
+  
 }
 .container {
   margin: 0 auto;
   justify-content: center;
   text-align: center;
   padding-bottom: 0px;
+  
 }
 
 .navbar {
@@ -77,12 +79,21 @@ body {
   background-color: #ECE5D5;
   padding: 20px;
   border-radius: 5px;
+  
 }
 .user {
   background-color: #ECE5D5;
   color:#3D3028;
   padding: 20px;
   border-radius: 5px;
+}
+.selected:hover {
+  background-color: #ECE5D5;
+  color:#3D3028;
+}
+.selected {
+  transition: background-color 0.1s, color 0.1s; /* Smooth transition */
+
 }
 
 h1 {

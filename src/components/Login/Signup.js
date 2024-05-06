@@ -39,7 +39,7 @@ const Signup = () => {
                 
                     .then(() => {
                         console.log('User data added to Firestore');
-                        navigate("/");
+                        window.location.href = "/";  
                     })
                     .catch((error) => {
                         console.error('Error adding user data to Firestore: ', error);
@@ -51,7 +51,7 @@ const Signup = () => {
                 const errorMessage = error.message;
                 console.log(errorCode, errorMessage);
             });
-            navigate("/");
+            window.location.href = "/";  ;
 
     }
 
